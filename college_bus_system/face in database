@@ -1,0 +1,11 @@
+from .models import Student
+
+def register_student(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        student_id = request.POST['student_id']
+        face_encoding = capture_face(student_id, name)
+
+        if face_encoding is not None:
+            Student.objects.create(name=name, student_id=student_id, face_encoding=face_encoding.tobytes())
+        # Handle response

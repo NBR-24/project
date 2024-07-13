@@ -1,0 +1,41 @@
+import numpy as np
+from django.shortcuts import render
+from .models import Student
+
+def recognize_face():
+    video_capture = cv2.VideoCapture(0)
+
+    while True:
+        ret, frame = video_capture.read()
+        rgb_frame = frame[:, :, ::-1]
+
+        face_locations = face_recognition.face_locations(rgb_frame)
+        face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+
+        students = Student.objects.all()
+        known_face_encodings = [np.frombuffer(student.face_encoding) for student in students]
+        known_face_ids = [student.student_id for student in students]
+
+        for face_encoding in face_encodings:
+            matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+            face_distances = face_recognition.face_distance(known_face_encodings, face_encoding)
+            best_match_index = np.argmin(face_distances)
+
+            if matches[best_match_index]:
+                student_id = known_face_ids[best_match_index]
+                student = Student.objects.get(student_id=student_id)
+
+                if student.has_paid:
+                    print(f"Access granted to {student.name}")
+                    # Update the backend accordingly
+                else:
+                    print(f"Payment required for {student.name}")
+
+        cv2.imshow('Video', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    video_capture.release()
+    cv2.destroyAllWindows()
+    

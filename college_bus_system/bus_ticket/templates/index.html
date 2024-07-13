@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Bus Ticket System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: 80%;
+            max-width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register Student</h2>
+        <input type="text" id="name" placeholder="Name">
+        <input type="text" id="student_id" placeholder="Student ID">
+        <button onclick="registerStudent()">Register</button>
+
+        <h2>Confirm Payment</h2>
+        <button onclick="confirmPayment()">Confirm Payment</button>
+
+        <p id="message"></p>
+    </div>
+
+    <script>
+        function registerStudent() {
+            const name = document.getElementById('name').value;
+            const student_id = document.getElementById('student_id').value;
+            fetch('/register_student/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: name=${name}&student_id=${student_id}
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').innerText = data.status === 'success' ? 'Registration successful' : 'Registration failed';
+            });
+        }
+
+        function confirmPayment() {
+            fetch('/confirm_payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                let message = '';
+                if (data.status === 'access_granted') {
+                    message = Access granted to ${data.name};
+                } else if (data.status === 'payment_required') {
+                    message = Payment required for ${data.name};
+                } else {
+                    message = 'No match found';
+                }
+                document.getElementById('message').innerText = message;
+            });
+        }
+    </script>
+</body>
+</html>

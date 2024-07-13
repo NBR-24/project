@@ -1,0 +1,5 @@
+from django.http import JsonResponse
+
+def confirm_payment(request):
+    recognize_face()
+    return JsonResponse({'status': 'success'})
